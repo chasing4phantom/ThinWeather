@@ -1,3 +1,4 @@
+/*
 package com.example.zhang.thinweather.fragment;
 
 
@@ -33,9 +34,11 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
+*/
 /**
  * Created by zhang on 2018/7/22.
- */
+ *//*
+
 
 public class ChooseAreaFragment extends Fragment {
     public static final int LEVEL_PROVINCE = 0;
@@ -108,7 +111,9 @@ public class ChooseAreaFragment extends Fragment {
         queryProvinces();
     }
 
-    /*优先从数据库查询省，如果本地没有，向服务器查询*/
+    */
+/*优先从数据库查询省，如果本地没有，向服务器查询*//*
+
     private void queryProvinces(){
         titleText.setText("中国");
         backbutton.setVisibility(View.GONE);
@@ -127,7 +132,9 @@ public class ChooseAreaFragment extends Fragment {
         }
     }
 
-    /*优先从数据库查询市，如果本地没有，向服务器查询*/
+    */
+/*优先从数据库查询市，如果本地没有，向服务器查询*//*
+
     private void queryCities(){
         titleText.setText(selectProvince.getProvinceName());
         backbutton.setVisibility(View.VISIBLE);
@@ -146,7 +153,9 @@ public class ChooseAreaFragment extends Fragment {
             queryFromServer(address,"city");
         }
     }
-    /*优先从数据库查询县，如果本地没有，向服务器查询*/
+    */
+/*优先从数据库查询县，如果本地没有，向服务器查询*//*
+
     private void queryCounties(){
         titleText.setText(selectCity.getCityName());
         backbutton.setVisibility(View.VISIBLE);
@@ -211,7 +220,9 @@ public class ChooseAreaFragment extends Fragment {
         });
     }
 
-    /*进度框处理*/
+    */
+/*进度框处理*//*
+
     private void showProgressDialog(){
         if(progressDialog == null){
             progressDialog = new ProgressDialog(getActivity());
@@ -227,3 +238,4 @@ public class ChooseAreaFragment extends Fragment {
         }
     }
 }
+*/

@@ -12,4 +12,7 @@ public class Now {
 
     @SerializedName("cond_txt")
     public String info;
+
+    @SerializedName("cond_code")
+    public String code;
 }

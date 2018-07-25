@@ -33,8 +33,6 @@ import okhttp3.Response;
 public class WeatherActivity extends AppCompatActivity {
     public SwipeRefreshLayout swipeRefresh;
 
-    private String mWeatherId;
-
     private ScrollView weatherLayout;
 
     private TextView titleCity;
@@ -52,6 +50,8 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView aqiText;
 
     private TextView pm25Text;
+
+    private ImageView weatherInfoImage;
 
     private ImageView bingPicImg;
 
@@ -71,6 +71,7 @@ public class WeatherActivity extends AppCompatActivity {
         titleUpdateTime = findViewById(R.id.title_update_time);
         degreeText = findViewById(R.id.degree_text);
         weatherInfoText = findViewById(R.id.weather_info_text);
+        weatherInfoImage = findViewById(R.id.weather_info_image);
         forecastLayout = findViewById(R.id.forecast_layout);
         aqiText = findViewById(R.id.aqi_text);
         pm25Text = findViewById(R.id.pm25_text);
@@ -79,22 +80,26 @@ public class WeatherActivity extends AppCompatActivity {
         swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = preferences.getString("weather",null);
-        if(weatherString != null){
+        String aqiString = preferences.getString("aqi",null);
+        if(weatherString != null && aqiString !=null){
             //有缓存
             Weather weather = Utility.handleWeatherResponse(weatherString);
+            AQI aqi = Utility.handleAqiResponse(aqiString);
             showWeatherInfo(weather);
+            showAqiInfo(aqi);
         }else{
             //无缓存
             String weatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.VISIBLE);
-            requestWeather();
             requestAqi();
+            requestWeather();
         }
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                requestAqi();
                 requestWeather();
-                //requestAqi();
+
             }
         });
 
@@ -173,7 +178,7 @@ public class WeatherActivity extends AppCompatActivity {
                     public void run() {
                         if(aqi != null && "ok".equals(aqi.status)){
                             SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
-                            editor.putString("weather",responseText);
+                            editor.putString("aqi",responseText);
                             editor.apply();
                             showAqiInfo(aqi);
                         }else{
@@ -191,25 +196,27 @@ public class WeatherActivity extends AppCompatActivity {
     private void showWeatherInfo(Weather weather){
         String cityName = weather.basic.cityName;
         String updateTime = weather.update.updateTime.split(" ")[1];
-        Log.d(updateTime, "showWeatherInfo:Updatetime: ");
         String degree = weather.now.temperature + "℃";
-        Log.d(degree, "showWeatherInfo: ");
         String weatherInfo = weather.now.info;
+        Integer code = Integer.parseInt(weather.now.code);
         titleCity.setText(cityName);
-        titleUpdateTime.setText(updateTime);
+        titleUpdateTime.setText("最后更新 "+updateTime);
         degreeText.setText(degree);
+        weatherInfoImage.setImageLevel(code);
         weatherInfoText.setText(weatherInfo);
         forecastLayout.removeAllViews();
         for(Forecast forecast : weather.forecastList){
             View view = LayoutInflater.from(this).inflate(R.layout.forecast_item,forecastLayout,false);
             TextView dateText = (TextView) view.findViewById(R.id.date_text);
             TextView infoText = (TextView) view.findViewById(R.id.info_text);
-            TextView maxText = (TextView)view.findViewById(R.id.max_text);
-            TextView minText = (TextView)view.findViewById(R.id.min_text);
+            TextView maxTominText = view.findViewById(R.id.max_to_min_text);
             dateText.setText(forecast.date);
-            infoText.setText(forecast.cond_txt_d);
-            maxText.setText(forecast.tmp_max);
-            minText.setText(forecast.tmp_min);
+            if(forecast.cond_txt_d == forecast.cond_txt_n){
+                infoText.setText(forecast.cond_txt_d);
+            }else{
+                infoText.setText(forecast.cond_txt_d +"转"+forecast.cond_txt_n);
+            }
+            maxTominText.setText(forecast.tmp_max +"/"+forecast.tmp_min +"℃");
             forecastLayout.addView(view);
         }
         lifestyleLayout.removeAllViews();
@@ -218,7 +225,59 @@ public class WeatherActivity extends AppCompatActivity {
             TextView typeText = view.findViewById(R.id.lifestyle_type);
             TextView brfText = view.findViewById(R.id.lifestyle_brf);
             TextView txtText = view.findViewById(R.id.lifestyle_text);
-            typeText.setText(lifestyle.type);
+            switch(lifestyle.type){
+                case "comf":
+                    typeText.setText("舒适度指数");
+                    break;
+                case "cw":
+                    typeText.setText("洗车指数");
+                    break;
+                case "drsg":
+                    typeText.setText("穿衣指数");
+                    break;
+                case "flu":
+                    typeText.setText("感冒指数");
+                    break;
+                case "sport":
+                    typeText.setText("运动指数");
+                    break;
+                case "trav":
+                    typeText.setText("旅游指数");
+                    break;
+                case "uv":
+                    typeText.setText("紫外线指数");
+                    break;
+                case "air":
+                    typeText.setText("空气污染扩散条件指数");
+                    break;
+                case "ac":
+                    typeText.setText("空调开启指数");
+                    break;
+                case "ag":
+                    typeText.setText("过敏指数");
+                    break;
+                case "gl":
+                    typeText.setText("太阳镜指数");
+                    break;
+                case "mu":
+                    typeText.setText("化妆指数");
+                    break;
+                case "airc":
+                    typeText.setText("晾晒指数");
+                    break;
+                case "ptfc":
+                    typeText.setText("交通指数");
+                    break;
+                case "fisin":
+                    typeText.setText("钓鱼指数");
+                    break;
+                case "spi":
+                    typeText.setText("防晒指数");
+                    break;
+                    default:
+                        break;
+
+            }
             brfText.setText(lifestyle.briefinfo);
             txtText.setText(lifestyle.info);
             lifestyleLayout.addView(view);
