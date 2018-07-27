@@ -1,5 +1,6 @@
 package com.example.zhang.thinweather;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -35,6 +36,8 @@ public class WeatherActivity extends AppCompatActivity {
 
     private ScrollView weatherLayout;
 
+    private ImageView changeCity;
+
     private TextView titleCity;
 
     private TextView titleUpdateTime;
@@ -55,6 +58,8 @@ public class WeatherActivity extends AppCompatActivity {
 
     private ImageView bingPicImg;
 
+    private String cid;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +73,7 @@ public class WeatherActivity extends AppCompatActivity {
         bingPicImg = findViewById(R.id.bing_pic_img);
         weatherLayout = findViewById(R.id.weather_layout);
         titleCity = findViewById(R.id.title_city);
+        changeCity = findViewById(R.id.change_city);
         titleUpdateTime = findViewById(R.id.title_update_time);
         degreeText = findViewById(R.id.degree_text);
         weatherInfoText = findViewById(R.id.weather_info_text);
@@ -89,16 +95,16 @@ public class WeatherActivity extends AppCompatActivity {
             showAqiInfo(aqi);
         }else{
             //无缓存
-            String weatherId = getIntent().getStringExtra("weather_id");
+            //String weatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.VISIBLE);
-            requestAqi();
-            requestWeather();
+            requestAqi("auto_ip");
+            requestWeather("auto_ip");
         }
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                requestAqi();
-                requestWeather();
+                requestAqi(cid);
+                requestWeather(cid);
 
             }
         });
@@ -109,12 +115,38 @@ public class WeatherActivity extends AppCompatActivity {
         }else{
             loadBingPic();
         }
-
+        changeCity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(WeatherActivity.this,ChangeCityActivity.class);
+                startActivityForResult(intent,1);
+            }
+        });
 
     }
+
+    @Override
+    protected void onActivityResult(int requestCode,int resultCode,Intent data){
+        switch (requestCode){
+            case 1:
+                if(resultCode == RESULT_OK){
+                    cid = data.getStringExtra("cid");
+                    swipeRefresh.setRefreshing(true);
+                    requestWeather(cid);
+                    requestAqi(cid);
+                }
+                break;
+                default:
+        }
+    }
     //请求当前城市的常规天气数据集合
-    public void requestWeather(){
-        String weatherUrl = "https://free-api.heweather.com/s6/weather?location=auto_ip&key=d865f88a27d34451ad929db6405a5aeb";
+    public void requestWeather(String cid){
+        String weatherUrl;
+        if(cid !="auto_ip") {
+             weatherUrl = "https://free-api.heweather.com/s6/weather?location=" + cid + "&key=d865f88a27d34451ad929db6405a5aeb";
+        }else{
+             weatherUrl = "https://free-api.heweather.com/s6/weather?location=auto_ip&key=d865f88a27d34451ad929db6405a5aeb";
+        }
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -154,8 +186,13 @@ public class WeatherActivity extends AppCompatActivity {
     }
 
     //请求当前城市的空气质量实况
-    public void requestAqi(){
-        String weatherUrl = "https://free-api.heweather.com/s6/air?location=auto_ip&key=d865f88a27d34451ad929db6405a5aeb";
+    public void requestAqi(String cid){
+        String weatherUrl;
+        if(cid !="auto_ip") {
+             weatherUrl = "https://free-api.heweather.com/s6/air?location="+cid+"&key=d865f88a27d34451ad929db6405a5aeb";
+        }else{
+            weatherUrl = "https://free-api.heweather.com/s6/air?location=auto_ip&key=d865f88a27d34451ad929db6405a5aeb";
+        }
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -301,7 +338,7 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                final String bingPic = response.body().string();
-               SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
+               SharedPreferences .Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
                 editor.putString("bing_pic",bingPic);
                 editor.apply();
 
