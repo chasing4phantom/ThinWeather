@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
     <EditText
         android:id="@+id/edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="搜索国内外城市"
-        android:textSize="14sp"/>
+        android:singleLine="true"
+        android:background="#fff"
+        android:textSize="16sp"
+        android:layout_marginStart="5dp"
+        android:layout_margin="10dp"/>
     <ListView
         android:id="@+id/listview_city"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"></ListView>
+        android:layout_height="wrap_content"
+        android:divider="#BDBDBD"
+        android:background="#fff"
+        ></ListView>
 </LinearLayout>

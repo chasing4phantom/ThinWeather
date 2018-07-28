@@ -22,6 +22,7 @@ import com.example.zhang.thinweather.gson.AQI;
 import com.example.zhang.thinweather.gson.Forecast;
 import com.example.zhang.thinweather.gson.Lifestyle;
 import com.example.zhang.thinweather.gson.Weather;
+import com.example.zhang.thinweather.service.UpdateInfoService;
 import com.example.zhang.thinweather.util.HttpUtil;
 import com.example.zhang.thinweather.util.Utility;
 
@@ -84,7 +85,7 @@ public class WeatherActivity extends AppCompatActivity {
         lifestyleLayout = findViewById(R.id.lifestyle_layout);
         swipeRefresh = findViewById(R.id.swipe_refresh);
         swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = preferences.getString("weather",null);
         String aqiString = preferences.getString("aqi",null);
         if(weatherString != null && aqiString !=null){
@@ -103,6 +104,7 @@ public class WeatherActivity extends AppCompatActivity {
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                cid = preferences.getString("cid","auto_ip");
                 requestAqi(cid);
                 requestWeather(cid);
 
@@ -134,6 +136,9 @@ public class WeatherActivity extends AppCompatActivity {
                     swipeRefresh.setRefreshing(true);
                     requestWeather(cid);
                     requestAqi(cid);
+                    SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
+                    editor.putString("cid",data.getStringExtra("cid"));
+                    editor.apply();
                 }
                 break;
                 default:
@@ -142,11 +147,12 @@ public class WeatherActivity extends AppCompatActivity {
     //请求当前城市的常规天气数据集合
     public void requestWeather(String cid){
         String weatherUrl;
-        if(cid !="auto_ip") {
-             weatherUrl = "https://free-api.heweather.com/s6/weather?location=" + cid + "&key=d865f88a27d34451ad929db6405a5aeb";
+        if(("auto_ip").equals(cid)) {
+            weatherUrl = "https://free-api.heweather.com/s6/weather?location=auto_ip&key=d865f88a27d34451ad929db6405a5aeb";
         }else{
-             weatherUrl = "https://free-api.heweather.com/s6/weather?location=auto_ip&key=d865f88a27d34451ad929db6405a5aeb";
+            weatherUrl = "https://free-api.heweather.com/s6/weather?location=" + cid + "&key=d865f88a27d34451ad929db6405a5aeb";
         }
+        Log.d(weatherUrl.substring(1,68), "requestWeather: ");
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -188,10 +194,11 @@ public class WeatherActivity extends AppCompatActivity {
     //请求当前城市的空气质量实况
     public void requestAqi(String cid){
         String weatherUrl;
-        if(cid !="auto_ip") {
-             weatherUrl = "https://free-api.heweather.com/s6/air?location="+cid+"&key=d865f88a27d34451ad929db6405a5aeb";
-        }else{
+        if(("auto_ip").equals(cid)) {
             weatherUrl = "https://free-api.heweather.com/s6/air?location=auto_ip&key=d865f88a27d34451ad929db6405a5aeb";
+
+        }else{
+            weatherUrl = "https://free-api.heweather.com/s6/air?location="+cid+"&key=d865f88a27d34451ad929db6405a5aeb";
         }
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
             @Override
@@ -219,7 +226,7 @@ public class WeatherActivity extends AppCompatActivity {
                             editor.apply();
                             showAqiInfo(aqi);
                         }else{
-                            Toast.makeText(WeatherActivity.this,"获取信息失败",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(WeatherActivity.this,"获取aqi信息失败",Toast.LENGTH_SHORT).show();
 
                         }
                         //swipeRefresh.setRefreshing(false);
@@ -320,7 +327,8 @@ public class WeatherActivity extends AppCompatActivity {
             lifestyleLayout.addView(view);
         }
         weatherLayout.setVisibility(View.VISIBLE);
-
+        Intent intent = new Intent(this, UpdateInfoService.class);
+        startService(intent);
     }
 
     //展示空气质量实况

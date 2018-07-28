@@ -8,5 +8,8 @@
         android:id="@+id/city_item"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16sp"/>
+        android:layout_margin="10dp"
+        android:layout_marginStart="15dp"
+        android:textSize="18sp"
+        />
 </LinearLayout>

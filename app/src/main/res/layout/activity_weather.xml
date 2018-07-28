@@ -36,6 +36,8 @@
             <include layout="@layout/aqi"/>
 
             <include layout="@layout/lifestyle"/>
+
+            <include layout="@layout/logo"/>
         </LinearLayout>
     </ScrollView>
     </android.support.v4.widget.SwipeRefreshLayout>
